@@ -1,10 +1,10 @@
-import datetime
+# import datetime
 import typing
-import functools
+# import functools
 import importlib
 
 import pydantic
-from fastapi import FastAPI, UploadFile, File, Response, Request
+from fastapi import FastAPI, Response, Request
 from starlette.responses import StreamingResponse
 
 
@@ -28,13 +28,13 @@ def import_string(name):
 storage = import_string(settings.storage_class)()
 
 
-class User(pydantic.BaseModel):
-    name: str
-
-
 class Error(pydantic.BaseModel):
     code: int
     message: str
+
+
+# class User(pydantic.BaseModel):
+#     name: str
 
 
 # class Lock(pydantic.BaseModel):
@@ -53,12 +53,6 @@ class Error(pydantic.BaseModel):
 #     message: typing.Optional[str]
 
 
-# @app.get("/{repo}/locks", response_model=LockResponse)
-# def get_locks(request: LockRequest):
-#     print('get_locks', request)
-#     return LockResponse()
-
-
 # class VerifiableLockRequest(pydantic.BaseModel):
 #     cusor: typing.Optional[str]
 #     limit: typing.Optional[int]
@@ -70,19 +64,6 @@ class Error(pydantic.BaseModel):
 #     next_cursor: typing.Optional[str]
 #     message: typing.Optional[str]
 
-
-# @app.post("/{repo}/locks/verify", response_model=VerifiableLockListResponse)
-# def verify_locks(request: VerifiableLockRequest):
-#     print('verify_locks', request)
-#     return VerifiableLockListResponse(ours=[], theirs=[])
-
-
-# @app.post("/{repo}/locks", response_model=LockResponse)
-# def create_locks(request: LockRequest):
-#     print('create_locks', request)
-#     return LockResponse()
-
-
 # class UnlockRequest(pydantic.BaseModel):
 #     force: bool  # NOQA
 
@@ -91,9 +72,27 @@ class Error(pydantic.BaseModel):
 #     lock: Lock
 #     message: typing.Optional[str]
 
+# @app.get("/{repo}/locks", response_model=LockResponse)
+# def get_locks(request: LockRequest):
+#     # LocksHandler
+#     print('get_locks', request)
+#     return LockResponse()
+
+# @app.post("/{repo}/locks/verify", response_model=VerifiableLockListResponse)
+# def verify_locks(request: VerifiableLockRequest):
+#     # LocksVerifyHandler
+#     print('verify_locks', request)
+#     return VerifiableLockListResponse(ours=[], theirs=[])
+
+# @app.post("/{repo}/locks", response_model=LockResponse)
+# def create_locks(request: LockRequest):
+#     # CreateLockHandler
+#     print('create_locks', request)
+#     return LockResponse()
 
 # @app.post("/{repo}/locks/{id}/unlock", response_model=UnlockResponse)
 # def unlock_locks(request: UnlockRequest):
+#     # DeleteLockHandler
 #     pass
 
 
@@ -177,44 +176,10 @@ async def upload_batch(request: BatchRequest, repo: str):
 
 @app.get("/{repo}/objects/{oid}")
 async def download_object(repo: str, oid: str):
-    # print('download', repo, oid)
     return StreamingResponse(storage.read(repo, oid))
 
 
 @app.put("/{repo}/objects/{oid}")
-# def upload_object(repo: str, oid: str, file_obj: UploadFile = File(...)):
 async def upload_object(repo, oid, request: Request):
     await storage.save(repo, oid, request.stream())
-    # print(repo, oid, request)
-    # print(dir(request))
-    # print(request.body, type(request.body))
-    # print(request.stream, type(request.stream))
-    # async for chunk in request.stream():
-    #     print("upload_object", chunk)
     return Response()
-
-
-# r.HandleFunc("/{user}/{repo}/objects/batch", app.requireAuth(app.BatchHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-
-# route := "/{user}/{repo}/objects/{oid}"
-# r.HandleFunc(route, app.requireAuth(app.GetContentHandler)).Methods("GET", "HEAD").MatcherFunc(ContentMatcher)
-# r.HandleFunc(route, app.requireAuth(app.GetMetaHandler)).Methods("GET", "HEAD").MatcherFunc(MetaMatcher)
-# r.HandleFunc(route, app.requireAuth(app.PutHandler)).Methods("PUT").MatcherFunc(ContentMatcher)
-
-# r.HandleFunc("/{user}/{repo}/objects", app.requireAuth(app.PostHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-
-# r.HandleFunc("/{user}/{repo}/locks", app.requireAuth(app.LocksHandler)).Methods("GET").MatcherFunc(MetaMatcher)
-# r.HandleFunc("/{user}/{repo}/locks/verify", app.requireAuth(app.LocksVerifyHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-# r.HandleFunc("/{user}/{repo}/locks", app.requireAuth(app.CreateLockHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-# r.HandleFunc("/{user}/{repo}/locks/{id}/unlock", app.requireAuth(app.DeleteLockHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-
-# r.HandleFunc("/objects/batch", app.requireAuth(app.BatchHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-
-# route = "/objects/{oid}"
-# r.HandleFunc(route, app.requireAuth(app.GetContentHandler)).Methods("GET", "HEAD").MatcherFunc(ContentMatcher)
-# r.HandleFunc(route, app.requireAuth(app.GetMetaHandler)).Methods("GET", "HEAD").MatcherFunc(MetaMatcher)
-# r.HandleFunc(route, app.requireAuth(app.PutHandler)).Methods("PUT").MatcherFunc(ContentMatcher)
-
-# r.HandleFunc("/objects", app.requireAuth(app.PostHandler)).Methods("POST").MatcherFunc(MetaMatcher)
-
-# r.HandleFunc("/verify/{oid}", app.VerifyHandler).Methods("POST")
